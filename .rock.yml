@@ -1,0 +1,3 @@
+runtime: python27
+run: exec python titan/launcher.py
+test: exec python titan/launcher.py --test
