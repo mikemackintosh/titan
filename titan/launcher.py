@@ -42,14 +42,12 @@ MODULE_PACKS = [
     join(MODULES_DIR, mod_pack) for mod_pack in listdir(MODULES_DIR) if mod_pack not in ["lib"]
 ]
 
-print [walk(fname) for fname in MODULE_PACKS]
-
-# Get modules
-MODULES = [
-    
-    #join(MODULES_DIR, fname) for fname in walk(MODULE_PACKS)\
-    #if isfile(join(MODULES_DIR, fname))
-]
+# Define all of our modules
+MODULES = []
+for path in MODULE_PACKS:
+    for root,dirs,files in walk(path):
+        for f in (f for f in files if f not in [".gitkeep", "README"]):
+            MODULES.append( join(root,f) )
 
 PYTHON_LANGUAGE = TiLanguage(
     supported_extensions = [".py", ".pyc"],
