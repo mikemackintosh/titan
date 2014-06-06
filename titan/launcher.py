@@ -58,10 +58,16 @@ BASH_LANGUAGE = TiLanguage(
     execution_string = "/bin/bash"
 )
 
+PHP_LANGUAGE = TiLanguage(
+    supported_extensions = [".php"],
+    execution_string = "php"
+)
+
 SUPPORTED_LANGUAGES = [
     PYTHON_LANGUAGE,
     RUBY_LANGUAGE,
     BASH_LANGUAGE,
+    PHP_LANGUAGE,
 ]
 
 # Set Debugging
