@@ -5,7 +5,7 @@ This is the launcher for Titan
 
 import logging
 from subprocess import Popen, PIPE
-from os import listdir
+from os import listdir,walk
 from sys import argv
 from os.path import dirname, realpath, isfile, join, splitext, basename
 from collections import namedtuple
@@ -22,8 +22,8 @@ logging.basicConfig(format='%(message)s', level=logging.INFO)
 # Contants
 CURRENT_DIR = dirname(realpath(__file__))
 
-PUBLIC_MODULES_DIR = join(CURRENT_DIR, "modules/public/")
-PRIVATE_MODULES_DIR = join(CURRENT_DIR, "modules/private/")
+# Base Modules Dir
+MODULES_DIR = join(CURRENT_DIR, "modules/")
 
 # Log Directory
 LOG_DIR = join(CURRENT_DIR, "log")
@@ -37,10 +37,18 @@ HOSTNAME = gethostname()
 # Get Runtime
 DATE = strftime("%Y-%m-%dT%H:%M:%S%z", gmtime())
 
+# Define Module Packs
+MODULE_PACKS = [
+    join(MODULES_DIR, mod_pack) for mod_pack in listdir(MODULES_DIR) if mod_pack not in ["lib"]
+]
+
+print [walk(fname) for fname in MODULE_PACKS]
+
 # Get modules
 MODULES = [
-    join(PUBLIC_MODULES_DIR, fname) for fname in listdir(PUBLIC_MODULES_DIR)\
-    if isfile(join(PUBLIC_MODULES_DIR, fname))
+    
+    #join(MODULES_DIR, fname) for fname in walk(MODULE_PACKS)\
+    #if isfile(join(MODULES_DIR, fname))
 ]
 
 PYTHON_LANGUAGE = TiLanguage(
