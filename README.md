@@ -15,9 +15,9 @@ The following features are currently supported in Titan:
   - Easy 3rd-party module installation
   - Dynamic module loading
   - Added PHP runtime for modules
-  - Inventory management [in dev]
-  - Local report viewing [in dev]
-  - Customizable reporting mechanism [in dev]
+  - Inventory management __[in dev]__
+  - Local report viewing __[in dev]__
+  - Customizable reporting mechanism __[in dev]__
 
 Usage
 -----
