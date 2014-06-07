@@ -137,7 +137,7 @@ def launch_modules():
 
         if current_lang is not None and isinstance(current_lang, TiLanguage):
             if test:
-                print "[D] Module: %s, Lang: %s, Name: %s" % (module, current_lang, mod_name)
+                print "[D] Module: %s, Lang: %s, Name: %s" % (module, current_lang.execution_string, mod_name)
             
             spawn_module(module, current_lang, mod_name)
 
