@@ -4,6 +4,7 @@ This is the launcher for Titan
 """
 
 import logging
+import ConfigParser
 from subprocess import Popen, PIPE
 from os import listdir,walk
 from sys import argv
@@ -12,6 +13,11 @@ from collections import namedtuple
 from itertools import chain
 from socket import gethostname
 from time import strftime, gmtime
+
+
+# Config
+config = ConfigParser.SafeConfigParser()
+config.read('titan.conf')
 
 # Types
 TiLanguage = namedtuple("TiLanguage", "supported_extensions execution_string")
@@ -48,6 +54,7 @@ for path in MODULE_PACKS:
     for root,dirs,files in walk(path):
         for f in (f for f in files if f not in [".gitkeep", "README"]):
             MODULES.append( join(root,f) )
+
 
 PYTHON_LANGUAGE = TiLanguage(
     supported_extensions = [".py", ".pyc"],
@@ -125,7 +132,7 @@ def launch_modules():
             if test:
                 print "Module: %s, Lang: %s, Name: %s" % (module, current_lang, mod_name)
             
-            #spawn_module(module, current_lang, mod_name)
+            spawn_module(module, current_lang, mod_name)
 
 if __name__ == "__main__":
     if "--test" in argv[1:]:
