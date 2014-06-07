@@ -34,11 +34,11 @@ Usage
 Contributors
 ---------------------------
 
-## Titan Contributors
+#### Titan Contributors
 
 + __Mike Mackintosh ([@mikemackintosh](https://twitter.com/mikemackintosh))
 
-## Original MIDAS Contributors
+#### Original MIDAS Contributors
 
 + __Mike Arpaia__ ([@mikearpaia](https://twitter.com/mikearpaia))
 + __Chris Biettchert__ ([@chrisbiettchert](https://twitter.com/chrisbiettchert))
