@@ -39,7 +39,7 @@ CURRENT_DIR = dirname(realpath(__file__))
 MODULES_DIR = join(CURRENT_DIR, "modules/")
 
 # Log Directory
-LOG_DIR = join(CURRENT_DIR, "log")
+LOG_DIR = join(CURRENT_DIR, "logs")
 
 # Report Directory
 REPORT_DIR = join(CURRENT_DIR, "reports")
@@ -91,7 +91,7 @@ SUPPORTED_LANGUAGES = [
 ]
 
 # Set Debugging
-test = False
+testing_enabled = False
 
 # Functions
 def log_line(log_name, line):
@@ -136,13 +136,13 @@ def launch_modules():
                 break
 
         if current_lang is not None and isinstance(current_lang, TiLanguage):
-            if test:
+            if testing_enabled:
                 print "[D] Module: %s, Lang: %s, Name: %s" % (module, current_lang.execution_string, mod_name)
             
             spawn_module(module, current_lang, mod_name)
 
 if __name__ == "__main__":
     if "--test" in argv[1:]:
-        test = True
+        testing_enabled = True
 
     launch_modules()
