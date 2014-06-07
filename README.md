@@ -22,13 +22,13 @@ The following features are currently supported in Titan:
 Usage
 -----
 
-## Installation:
+### Installation:
 
-## Configuration:
+### Configuration:
 
-## Adding Modules:
+### Adding Modules:
 
-## Creating Modules:
+### Creating Modules:
 
 
 Contributors
