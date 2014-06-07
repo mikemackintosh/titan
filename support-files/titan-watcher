@@ -1,16 +1,28 @@
 #!/usr/bin/env python
+#
+# Todo: Read config file, use target as test for urlopen2
+#
 
 import urllib2, urllib, httplib, json
+import logging
 from os import walk
+from time import sleep
 
-""" Check if internet is available """
+# Configure Logging
+logging.basicConfig(format='%(message)s', level=logging.INFO)
+
+# Push Reports function
+def push_reports():
+	pass
+
+# Check if internet is available
 while True:
     try:
         urllib2.urlopen("http://www.google.com").close()
     except urllib2.URLError:
-        print "Not Connected"
-        time.sleep(60)
+        logging.info("Titan Watcher did not detect a connection, retrying in 60 seconds")
+        sleep(60)
     else:
- 		print "Internet connection detected"
- 		time.sleep(300)
-        break
+ 		logging.info("Titan Watcher detected a connection")
+ 		push_reports
+		sleep(300)
