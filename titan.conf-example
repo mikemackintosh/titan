@@ -1,0 +1,8 @@
+[main]
+reporting = true
+report_target = http://localhost:9393
+debug = true
+
+[watcher]
+enabled = true
+

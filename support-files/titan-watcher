@@ -8,6 +8,15 @@ import urllib2, urllib, httplib, json
 import logging
 from os import walk,remove
 from time import sleep
+import ConfigParser
+
+# Load Configuration
+Config = ConfigParser.SafeConfigParser()
+if path.isfile('titan.conf'):
+  Config.read('titan.conf')
+else:
+  print "[!] Please create titan.conf"
+  exit()
 
 # Configure Logging
 logging.basicConfig(format='%(message)s', level=logging.INFO)
@@ -18,7 +27,7 @@ def push_reports():
 		for tracker in filenames:
 			json_data=open(root + tracker)
 			data = json.load(json_data)
-			status, response = send_request(url_check_in, data)
+			status, response = send_request(Config.get('main', 'report_target'), data)
 			
 			if status == 200:
 				remove(tracker)
