@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+
+import urllib2, urllib, httplib, json
+from os import walk
+
+""" Check if internet is available """
+while True:
+    try:
+        urllib2.urlopen("http://www.google.com").close()
+    except urllib2.URLError:
+        print "Not Connected"
+        time.sleep(60)
+    else:
+ 		print "Internet connection detected"
+ 		time.sleep(300)
+        break
