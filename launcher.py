@@ -6,18 +6,25 @@ This is the launcher for Titan
 import logging
 import ConfigParser
 from subprocess import Popen, PIPE
-from os import listdir,walk
-from sys import argv
+from os import listdir,walk,path
+from sys import argv,exit
 from os.path import dirname, realpath, isfile, join, splitext, basename
 from collections import namedtuple
 from itertools import chain
 from socket import gethostname
 from time import strftime, gmtime
 
+# Into message
+print "Titan - The Golden Apple For Mac Security"
+print ""
 
 # Config
-config = ConfigParser.SafeConfigParser()
-config.read('titan.conf')
+Config = ConfigParser.SafeConfigParser()
+if path.isfile('titan.conf'):
+  Config.read('titan.conf')
+else:
+  print "[!] Please create titan.conf"
+  exit()
 
 # Types
 TiLanguage = namedtuple("TiLanguage", "supported_extensions execution_string")
@@ -130,7 +137,7 @@ def launch_modules():
 
         if current_lang is not None and isinstance(current_lang, TiLanguage):
             if test:
-                print "Module: %s, Lang: %s, Name: %s" % (module, current_lang, mod_name)
+                print "[D] Module: %s, Lang: %s, Name: %s" % (module, current_lang, mod_name)
             
             spawn_module(module, current_lang, mod_name)
 
