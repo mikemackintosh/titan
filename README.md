@@ -36,7 +36,7 @@ Contributors
 
 #### Titan Contributors
 
-+ __Mike Mackintosh ([@mikemackintosh](https://twitter.com/mikemackintosh))
++ __Mike Mackintosh__ ([@mikemackintosh](https://twitter.com/mikemackintosh))
 
 #### Original MIDAS Contributors
 
