@@ -24,7 +24,11 @@ Usage
 
 ### Installation:
 
+
+
 ### Configuration:
+
+Default configuration expects Titan to exist in `/usr/local/titan/`. 
 
 ### Adding Modules:
 
