@@ -6,28 +6,45 @@
 
 import urllib2, urllib, httplib, json
 import logging
-from os import walk,remove
+from os import path,walk,remove,environ
+from os.path import dirname, realpath, isfile, join, splitext, basename
 from time import sleep
 import ConfigParser
 
+# Get Titan Env and Config
+TITAN_PATH = (environ.get('TITAN_PATH') or '/usr/local/titan/')
+TITAN_CONFIG = join(TITAN_PATH, 'titan.conf')
+
 # Load Configuration
 Config = ConfigParser.SafeConfigParser()
-if path.isfile('titan.conf'):
-  Config.read('titan.conf')
+if path.isfile( TITAN_CONFIG ):
+ 	
+ 	# Read the config file
+ 	Config.read( TITAN_CONFIG )
+
+ 	# Set Log Path
+ 	LOG_PATH = Config.get('main', 'log_path')
+ 	REPORTING_TARGET = Config.get('main', 'reporting_target')
+
 else:
   print "[!] Please create titan.conf"
   exit()
+
+# Check if Watcher is enabled
+if Config.get('watcher', 'enabled') is "false":
+	print "[!] Watcher is disabled"
+	exit()
 
 # Configure Logging
 logging.basicConfig(format='%(message)s', level=logging.INFO)
 
 # Get Reports function
 def push_reports():
-	for root, dirnames, filenames in walk('/var/log/titan/'):
+	for root, dirnames, filenames in walk( LOG_PATH ):
 		for tracker in filenames:
 			json_data=open(root + tracker)
 			data = json.load(json_data)
-			status, response = send_request(Config.get('main', 'report_target'), data)
+			status, response = send_request( REPORTING_TARGET, data)
 			
 			if status == 200:
 				remove(tracker)
@@ -50,7 +67,7 @@ def send_request( target, data):
 			response_object = e.code, e.read()
 
 	except urllib2.URLError, e:
-		f = open("/var/log/titan/queue_%s.log" % sysdic['time'],'w')
+		f = open( join( LOG_PATH, "/queue_%s.log" % sysdic['time'] ),'w')
 		f.write(json.dumps(sysdic))
 		f.close()
 		response_object = 0, 'Connection Refused'
@@ -61,7 +78,7 @@ def send_request( target, data):
 # Check if internet is available
 while True:
     try:
-        urllib2.urlopen("http://www.google.com").close()
+        urllib2.urlopen( REPORTING_TARGET ).close()
     except urllib2.URLError:
         logging.info("Titan Watcher did not detect a connection, retrying in 60 seconds")
         sleep(60)
