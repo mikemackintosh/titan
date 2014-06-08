@@ -6,7 +6,7 @@ This is the launcher for Titan
 import logging
 import ConfigParser
 from subprocess import Popen, PIPE
-from os import listdir,walk,path
+from os import listdir,walk,path,environ
 from sys import argv,exit
 from os.path import dirname, realpath, isfile, join, splitext, basename
 from collections import namedtuple
@@ -18,10 +18,14 @@ from time import strftime, gmtime
 print "Titan - The Golden Apple For Mac Security"
 print ""
 
+# Get Titan Env and Config
+TITAN_PATH = (environ.get('TITAN_PATH') or '/usr/local/titan/')
+TITAN_CONFIG = join(TITAN_PATH, 'titan.conf')
+
 # Config
 Config = ConfigParser.SafeConfigParser()
-if path.isfile('titan.conf'):
-  Config.read('titan.conf')
+if path.isfile(TITAN_CONFIG):
+  Config.read(TITAN_CONFIG)
 else:
   print "[!] Please create titan.conf"
   exit()
