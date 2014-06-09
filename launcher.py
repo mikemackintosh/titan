@@ -36,7 +36,7 @@ TiLanguage = namedtuple("TiLanguage", "supported_extensions execution_string")
 # Configurations
 logging.basicConfig(format='%(message)s', level=logging.INFO)
 
-# Contants
+# Constants
 CURRENT_DIR = dirname(realpath(__file__))
 
 # Base Modules Dir
@@ -87,11 +87,17 @@ PHP_LANGUAGE = TiLanguage(
     execution_string = "php"
 )
 
+PHP_LANGUAGE = TiLanguage(
+    supported_extensions = [".pl"],
+    execution_string = "perl"
+)
+
 SUPPORTED_LANGUAGES = [
     PYTHON_LANGUAGE,
     RUBY_LANGUAGE,
     BASH_LANGUAGE,
     PHP_LANGUAGE,
+    PERL_LANGUAGE,
 ]
 
 # Set Debugging
@@ -107,6 +113,7 @@ def log_line(log_name, line):
         line,
     )
 
+# Spawn module, capture output
 def spawn_module(module, current_lang, mod_name):
     """spawn_module executes an individual Titan module"""
     log_file = join(LOG_DIR, mod_name + ".log")
@@ -128,6 +135,7 @@ def spawn_module(module, current_lang, mod_name):
     for stderr_line in stderr:
         file_handler.write(log_line(mod_name, stderr_line))
 
+# Detect Modules
 def launch_modules():
     """launch_modules launches Titan's executable modules"""
     for module in MODULES:
@@ -145,6 +153,7 @@ def launch_modules():
             
             spawn_module(module, current_lang, mod_name)
 
+# Main Python Instructions
 if __name__ == "__main__":
     if "--test" in argv[1:]:
         testing_enabled = True
