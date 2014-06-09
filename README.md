@@ -1,20 +1,21 @@
 Titan
 =====
 
-Titan was designed with one large goal in mind, continuous reporting. The framework is tied closely with the Mac OS X core to detect an active Internet connection and push any reports which may have been blocked. 
+Titan was designed with one large goal in mind, continuous reporting. The framework is tied closely with the Mac OS X core to detect an active Internet connection and push any reports which may have been blocked.
 
 Origination
 -----------
-Titan spawned from the hard work of the MIDAS/Tripyarn project, a Etsy/Facebook masterpiece. Although effective, MIDAS uses syslog as a reporting mechanism. This is great, but we already log over 500 million logs a day from our services. We wanted to create a RESTful interface with anomaly detection and hooks that can report and take action immediately, rather than having to parse through a butt-load of logs at a later time.
+Titan spawned from the hard work of the MIDAS/Tripyarn project, a Etsy/Facebook masterpiece. We wanted to create a framework that was easily extended and simply managed by utilities like Chef/Puppet. Additionally, MIDAS used Syslog to report back to a centralized logging service. This is great, but we wanted a solution that would store/queue results and relay them when an Internet connection was detected. 
 
 Features
 --------
 
 The following features are currently supported in Titan:
 
-  - Easy 3rd-party module installation
   - Dynamic module loading
-  - Added PHP runtime for modules
+  - Easy 3rd-party module installation
+  - Supports Python, Ruby, Bash, Perl or PHP module runtimes
+  - REST endpoint and reporting via Olympus
   - Inventory management __[in dev]__
   - Local report viewing __[in dev]__
   - Customizable reporting mechanism __[in dev]__
@@ -28,12 +29,26 @@ Usage
 
 ### Configuration:
 
-Default configuration expects Titan to exist in `/usr/local/titan/`. 
+Default configuration expects Titan to exist in `/usr/local/titan/`. Of course, you can change this and update `TITAN_PATH` in `/etc/profile.d` or `/etc/environments` depending on what system you are using. You can use the `titan.conf-example` file as a boilerplate for your configuration which should be named `titan.conf`.
+
+    cd /path/to/titan
+    cp titan.conf-example titan.conf
+    vi titan.conf
+
 
 ### Adding Modules:
 
+Adding modules is **simple** using `git clone` in the `modules/` directory. 
+
+    cd /path/to/titan/modules
+    git clone https://github.com/titan-modules/git_repository.git
+
+The autoloader will identify and load the module on next run.
+
+
 ### Creating Modules:
 
+Take a look at some of the existing modules until we are able formalize our documentation.
 
 Contributors
 ---------------------------
