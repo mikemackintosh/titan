@@ -87,7 +87,7 @@ PHP_LANGUAGE = TiLanguage(
     execution_string = "php"
 )
 
-PHP_LANGUAGE = TiLanguage(
+PERL_LANGUAGE = TiLanguage(
     supported_extensions = [".pl"],
     execution_string = "perl"
 )
