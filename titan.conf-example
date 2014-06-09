@@ -1,8 +1,11 @@
 [main]
-reporting = true
-report_target = http://localhost:9393
 debug = true
+
+[reporting]
+enabled = true
+target = http://localhost:9393/titan ; Should be either route
+type = syslog|http ; Valid values are syslog or http
+log_path = /var/log/titan/
 
 [watcher]
 enabled = true
-
