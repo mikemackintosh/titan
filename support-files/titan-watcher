@@ -24,7 +24,7 @@ if path.isfile( TITAN_CONFIG ):
 
  	# Set Log Path
  	LOG_PATH = Config.get('main', 'log_path')
- 	REPORTING_TARGET = Config.get('main', 'reporting_target')
+ 	REPORTING_TARGET = Config.get('reporting', 'target')
 
 else:
   print "[!] Please create titan.conf"

@@ -5,17 +5,18 @@ This is the launcher for Titan
 
 import logging
 import ConfigParser
-from subprocess import Popen, PIPE
-from os import listdir,walk,path,environ
 from sys import argv,exit
-from os.path import dirname, realpath, isfile, join, splitext, basename
-from collections import namedtuple
 from itertools import chain
+from lib.ti_orm import TiORM
 from socket import gethostname
 from time import strftime, gmtime
+from collections import namedtuple
+from subprocess import Popen, PIPE
+from os import listdir,walk,path,environ
+from os.path import dirname, realpath, isfile, join, splitext, basename
 
 # Into message
-print "Titan - The Golden Apple For Mac Security"
+print "Titan - Don't Fxxk with our Mac's"
 print ""
 
 # Get Titan Env and Config
@@ -40,13 +41,16 @@ logging.basicConfig(format='%(message)s', level=logging.INFO)
 CURRENT_DIR = dirname(realpath(__file__))
 
 # Base Modules Dir
-MODULES_DIR = join(CURRENT_DIR, "modules/")
+MODULES_DIR = join(CURRENT_DIR, "modules")
 
 # Log Directory
-LOG_DIR = join(CURRENT_DIR, "logs")
+LOG_DIR = join(CURRENT_DIR, "logs/")
+
+# Log Directory
+DATASTORE_DIR = join(CURRENT_DIR, "datastore/")
 
 # Report Directory
-REPORT_DIR = join(CURRENT_DIR, "reports")
+REPORT_DIR = join(CURRENT_DIR, "reports/")
 
 # Get Hostname
 HOSTNAME = gethostname()
@@ -127,6 +131,9 @@ def spawn_module(module, current_lang, mod_name):
     stdout = execution.stdout.readlines()
     stderr = execution.stderr.readlines()
 
+    #for k, v in tables.iteritems():
+    #    ORM.initialize_table(k, v)
+
     file_handler = open(log_file, "a")
 
     for stdout_line in stdout:
@@ -157,5 +164,9 @@ def launch_modules():
 if __name__ == "__main__":
     if "--test" in argv[1:]:
         testing_enabled = True
+    
+    #ORM = TiORM(Config.get('main', 'datastore'))
+    #if isfile(Config.get('main', 'datastore')):
+    #    chmod(Config.get('main', 'datastore'), 0600)
 
     launch_modules()
