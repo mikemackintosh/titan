@@ -4,10 +4,10 @@ This is the launcher for Titan
 """
 
 import logging
-import ConfigParser
 from sys import argv,exit
 from itertools import chain
 from lib.ti_orm import TiORM
+from lib.config import TiConfig
 from socket import gethostname
 from time import strftime, gmtime
 from collections import namedtuple
@@ -16,20 +16,14 @@ from os import listdir,walk,path,environ
 from os.path import dirname, realpath, isfile, join, splitext, basename
 
 # Into message
-print "Titan - Don't Fxxk with our Mac's"
-print ""
+print "Titan - Don't Fxxk with our Mac's\n\n"
 
 # Get Titan Env and Config
 TITAN_PATH = (environ.get('TITAN_PATH') or '/usr/local/titan/')
 TITAN_CONFIG = join(TITAN_PATH, 'titan.conf')
 
 # Config
-Config = ConfigParser.SafeConfigParser()
-if path.isfile(TITAN_CONFIG):
-  Config.read(TITAN_CONFIG)
-else:
-  print "[!] Please create titan.conf"
-  exit()
+CONFIG = TiConfig( TITAN_CONFIG )
 
 # Types
 TiLanguage = namedtuple("TiLanguage", "supported_extensions execution_string")
