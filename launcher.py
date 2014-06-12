@@ -18,18 +18,18 @@ from os.path import dirname, realpath, isfile, join, splitext, basename
 # Into message
 print "Titan - Don't Fxxk with our Mac's\n\n"
 
+# Types
+TiLanguage = namedtuple("TiLanguage", "supported_extensions execution_string")
+
+# Configurations
+logging.basicConfig(format='%(message)s', level=logging.INFO)
+
 # Get Titan Env and Config
 TITAN_PATH = (environ.get('TITAN_PATH') or '/usr/local/titan/')
 TITAN_CONFIG = join(TITAN_PATH, 'titan.conf')
 
 # Config
 CONFIG = TiConfig( TITAN_CONFIG )
-
-# Types
-TiLanguage = namedtuple("TiLanguage", "supported_extensions execution_string")
-
-# Configurations
-logging.basicConfig(format='%(message)s', level=logging.INFO)
 
 # Constants
 CURRENT_DIR = dirname(realpath(__file__))
