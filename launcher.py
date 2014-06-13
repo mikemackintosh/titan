@@ -65,7 +65,7 @@ MODULE_PACKS = [
 MODULES = []
 for path in MODULE_PACKS:
     for root,dirs,files in walk(path):
-        for f in (f for f in files if f not in [".gitkeep", "README"]):
+        for f in (f for f in files if f not in [".gitkeep", "README", "schema.py"]):
             MODULES.append( join(root,f) )
 
 
