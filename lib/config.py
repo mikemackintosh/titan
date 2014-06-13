@@ -40,5 +40,4 @@ def TiConfig( config_file):
     else:
         exit('Failed to load configuration file, please check permissions')
 
-    print config
     return config
