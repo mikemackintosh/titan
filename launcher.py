@@ -8,6 +8,7 @@ from sys import argv,exit
 from itertools import chain
 from lib.ti_orm import TiORM
 from lib.config import TiConfig
+from lib.helpers import system
 from socket import gethostname
 from time import strftime, gmtime
 from collections import namedtuple
@@ -35,26 +36,29 @@ CONFIG = TiConfig( TITAN_CONFIG )
 CURRENT_DIR = dirname(realpath(__file__))
 
 # Base Modules Dir
-MODULES_DIR = join(CURRENT_DIR, "modules")
+MODULES_DIR = CONFIG['main']['modulestore']
 
 # Log Directory
-LOG_DIR = join(CURRENT_DIR, "logs/")
+LOG_DIR = CONFIG['main']['logstore']
 
 # Log Directory
-DATASTORE_DIR = join(CURRENT_DIR, "datastore/")
+DATASTORE_DIR = CONFIG['main']['datastore']
 
 # Report Directory
-REPORT_DIR = join(CURRENT_DIR, "reports/")
+REPORT_DIR = CONFIG['main']['reportstore']
 
 # Get Hostname
 HOSTNAME = gethostname()
+
+# Get Serial Number
+SERIALNUMBER = system.hw_serial()
 
 # Get Runtime
 DATE = strftime("%Y-%m-%dT%H:%M:%S%z", gmtime())
 
 # Define Module Packs
 MODULE_PACKS = [
-    join(MODULES_DIR, mod_pack) for mod_pack in listdir(MODULES_DIR) if mod_pack not in ["lib"]
+    join(MODULES_DIR, mod_pack) for mod_pack in listdir(MODULES_DIR)
 ]
 
 # Define all of our modules
@@ -119,21 +123,26 @@ def spawn_module(module, current_lang, mod_name):
     command = list(chain(
         current_lang.execution_string.split(" "),
         [module],
+        [TITAN_PATH,
+        DATASTORE_DIR]
     ))
 
-    execution = Popen(command, stdout=PIPE, stderr=PIPE)
+    execution = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     stdout = execution.stdout.readlines()
     stderr = execution.stderr.readlines()
-
-    #for k, v in tables.iteritems():
-    #    ORM.initialize_table(k, v)
 
     file_handler = open(log_file, "a")
 
     for stdout_line in stdout:
+        if testing_enabled:
+            print log_line(mod_name, stdout_line)
+
         file_handler.write(log_line(mod_name, stdout_line))
 
     for stderr_line in stderr:
+        if testing_enabled:
+            print log_line(mod_name, stderr_line)
+
         file_handler.write(log_line(mod_name, stderr_line))
 
 # Detect Modules
@@ -150,7 +159,7 @@ def launch_modules():
 
         if current_lang is not None and isinstance(current_lang, TiLanguage):
             if testing_enabled:
-                print "[D] Module: %s, Lang: %s, Name: %s" % (module, current_lang.execution_string, mod_name)
+                print log_line("titan-core", "Found Module: %s/%s, Lang: %s" % (basename(dirname(module)),mod_name, current_lang.execution_string))
             
             spawn_module(module, current_lang, mod_name)
 
@@ -158,9 +167,5 @@ def launch_modules():
 if __name__ == "__main__":
     if "--test" in argv[1:]:
         testing_enabled = True
-    
-    #ORM = TiORM(Config.get('main', 'datastore'))
-    #if isfile(Config.get('main', 'datastore')):
-    #    chmod(Config.get('main', 'datastore'), 0600)
 
     launch_modules()
