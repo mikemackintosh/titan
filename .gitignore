@@ -20,6 +20,8 @@ Thumbs.db
 
 # Shutterstock Private Modules #
 ################################
+!modules/README.md
+modules/*
 !modules/lib
 !modules/default
 titan.conf
