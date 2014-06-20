@@ -6,11 +6,10 @@ This is the launcher for Titan
 import logging
 from sys import argv,exit
 from itertools import chain
-from lib.ti_orm import TiORM
 from lib.config import TiConfig
 from lib.helpers import system
 from socket import gethostname
-from time import strftime, gmtime
+from time import time, strftime, gmtime
 from collections import namedtuple
 from subprocess import Popen, PIPE
 from os import listdir,walk,path,environ
@@ -43,6 +42,7 @@ LOG_DIR = CONFIG['main']['logstore']
 
 # Log Directory
 DATASTORE_DIR = CONFIG['main']['datastore']
+DATASTORE = join(CONFIG['main']['datastore'], "titan.sqlite")
 
 # Report Directory
 REPORT_DIR = CONFIG['main']['reportstore']
@@ -123,8 +123,7 @@ def spawn_module(module, current_lang, mod_name):
     command = list(chain(
         current_lang.execution_string.split(" "),
         [module],
-        [TITAN_PATH,
-        DATASTORE_DIR]
+        [DATASTORE]
     ))
 
     execution = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
@@ -168,4 +167,12 @@ if __name__ == "__main__":
     if "--test" in argv[1:]:
         testing_enabled = True
 
+    # Record Start Time
+    start = time()
+
+    # Launch Modules
     launch_modules()
+
+    # Record End Time
+    end = time()
+    logging.info("Execution took %s seconds.", str(end - start))
