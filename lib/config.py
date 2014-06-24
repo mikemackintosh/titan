@@ -16,7 +16,7 @@ def TiConfig( config_file):
     config = {
         'main': {
             'debug': 'true', 
-            'datastore': join(TITAN_DIR,'dbs'),
+            'datastore': join(TITAN_DIR,'db'),
             'logstore': join(TITAN_DIR,'logs'),
             'modulestore': join(TITAN_DIR, "modules"),
             'reportstore': join(TITAN_DIR, "reports/")
