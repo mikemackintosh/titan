@@ -1,3 +1,3 @@
 runtime: python27
-run: exec python launcher.py
-test: exec python launcher.py --test
+run: exec /usr/bin/python launcher.py
+test: exec /usr/bin/python launcher.py --test
