@@ -119,11 +119,17 @@ def log_line(log_name, line):
 def spawn_module(module, current_lang, mod_name):
     """spawn_module executes an individual Titan module"""
     log_file = join(LOG_DIR, mod_name + ".log")
+    
+    if testing_enabled:
+        logging_passthru = '--log'
+    else:
+        logging_passthru = ''
 
     command = list(chain(
         current_lang.execution_string.split(" "),
         [module],
-        [DATASTORE]
+        [DATASTORE],
+        [logging_passthru]
     ))
 
     execution = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
