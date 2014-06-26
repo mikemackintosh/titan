@@ -27,7 +27,9 @@ def TiConfig( config_file):
             'target': 'http://localhost:9393/titan'
             }, 
         'watcher': {
-            'enabled': 'true'
+            'enabled': 'true',
+            'timeout': 10,
+            'send_every': 60,
             }
         }
 

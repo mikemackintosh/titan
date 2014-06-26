@@ -9,3 +9,5 @@ type = syslog|http ; Valid values are syslog or http
 
 [watcher]
 enabled = true
+timeout = 3 ; Time to retry to connect to iwebz
+send_every = 60 ; Time to check for new reports
