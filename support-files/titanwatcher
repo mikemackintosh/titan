@@ -10,11 +10,15 @@ from os import path,walk,remove,environ
 from os.path import dirname, realpath, isfile, join, splitext, basename
 from titantools.orm import TiORM
 from time import sleep
+from sys import exit
 import ConfigParser
 
 # Get Titan Env and Config
 TITAN_PATH = (environ.get('TITAN_PATH') or '/usr/local/titan/')
 TITAN_CONFIG = join(TITAN_PATH, 'titan.conf')
+
+# Set datastore
+DATASTORE = join(TITAN_PATH, "db", "titan.sqlite")
 
 # Load Configuration
 Config = ConfigParser.SafeConfigParser()
@@ -37,6 +41,14 @@ if Config.get('watcher', 'enabled') is "false":
 
 # Configure Logging
 logging.basicConfig(format='%(message)s', level=logging.INFO)
+
+def generate_reports():
+	# Load ORM 
+	ORM = TiORM(DATASTORE)
+	if isfile(DATASTORE):
+	    chmod(DATASTORE, 0600)
+
+	print ORM
 
 # Send the request
 #def send_request( target, data):
@@ -73,4 +85,7 @@ while True:
 		sleep(float(Config.get('watcher', 'timeout')))
 	else:
 		logging.info("Titan Watcher detected a connection")
+		
+		generate_reports()
+
  		sleep(float(Config.get('watcher', 'send_every')))
