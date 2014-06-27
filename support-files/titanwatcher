@@ -16,7 +16,7 @@ from binascii import b2a_hex,hexlify
 #from titantools.orm import TiORM
 from titantools.system import shell_out
 from zlib import compress
-from time import sleep,strftime,gmtime,mktime
+from time import sleep,strftime,strptime,gmtime,mktime
 from sys import exit
 import ConfigParser
 
@@ -63,9 +63,7 @@ def generate_reports():
 
 	# Report Timestamp
 	unix_time = int(mktime(gmtime()))
-	exec_time = strftime("%a, %d %b %Y %H:%M:%S", gmtime())
-
-	print unix_time
+	exec_time = strftime("%a, %d %b %Y %H:%M:%S-%Z", gmtime())
 
 	# Query all tables
 	all_tables = ORM.select('sqlite_master', 'name',  "type = 'table' and name != 'watcher'")
@@ -91,11 +89,10 @@ def generate_reports():
 			# Logging is cool
 			print last_success
 			logging.info("Collecting data for [%s] since %s" % (table['name'],last_success[1]))
-			results = ORM.select(table['name'], '*', 'unixtime > %s' % last_success[3])
-
-		print results
+			results = ORM.select(table['name'], '*', 'unixtime > %d' % int(last_success[3]))
 		
 		if results is None or len(results) == 0:
+			passes_needed -= 1
 			continue
 
 		# Dump table to json
@@ -119,10 +116,10 @@ def generate_reports():
 	# If all data has been uploaded
 	# update watcher table
 	if passes_had == passes_needed:
-		response = {'utime': str(unix_time), 'date': exec_time, 'status': str(1)};
+		response = {'utime': str(unix_time), 'date': exec_time, 'status': str(1)}
 		ORM.insert('watcher', response)
 	else:
-		response = {'utime': str(unix_time), 'date': exec_time, 'status': str(0)};
+		response = {'utime': str(unix_time), 'date': exec_time, 'status': str(0)}
 		ORM.insert('watcher', response)
 
 	print ORM.select('watcher')
