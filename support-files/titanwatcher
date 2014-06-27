@@ -6,9 +6,13 @@
 
 import urllib2, urllib, httplib, json
 import logging
+import hashlib
 from os import path,walk,remove,environ
 from os.path import dirname, realpath, isfile, join, splitext, basename
+from binascii import b2a_hex,hexlify
 from titantools.orm import TiORM
+from titantools.system import shell_out
+from zlib import compress
 from time import sleep
 from sys import exit
 import ConfigParser
@@ -19,6 +23,9 @@ TITAN_CONFIG = join(TITAN_PATH, 'titan.conf')
 
 # Set datastore
 DATASTORE = join(TITAN_PATH, "db", "titan.sqlite")
+
+# Device Serial
+DEVICEID = shell_out("ioreg -c IOPlatformExpertDevice |head -30 |grep IOPlatformSerialNumber | awk '{print $4}'")[1:-2]
 
 # Load Configuration
 Config = ConfigParser.SafeConfigParser()
@@ -43,46 +50,71 @@ if Config.get('watcher', 'enabled') is "false":
 logging.basicConfig(format='%(message)s', level=logging.INFO)
 
 def generate_reports():
+
+	# Init post object
+	#post_object = []
+
 	# Load ORM 
 	ORM = TiORM(DATASTORE)
-	if isfile(DATASTORE):
-	    chmod(DATASTORE, 0600)
+	
+	# Query all tables
+	all_tables = ORM.select('sqlite_master', 'name',  "type = 'table'")
 
-	print ORM
+	# Loop through tables
+	for table in [table for table in all_tables if table not in ['watcher']]:
+		# Logging is cool
+		logging.info("Collecting data for [%s]" % table['name'])
+		
+		# Dump table to json
+		table_json = json.dumps(ORM.select(table['name']))
+		compressed = compress(table_json)
+
+		# Digest
+		content_digest = hashlib.sha256(compressed).hexdigest()
+
+		# Send the table data upstream
+		target = "%s%s" % (REPORTING_TARGET, DEVICEID)
+		logging.info("\tSending request to '%s'" % target)
+		code, response = send_request(target, {'serial': DEVICEID, 'digest': content_digest, 'stream': compressed})
+		logging.info("\tResponse: [%d] %s" % (code, response))
+
+	exit()
 
 # Send the request
-#def send_request( target, data):
-#	try:
-#		request = urllib2.Request(target, urllib.urlencode(data) )
-#		opener = urllib2.build_opener()
-#		response = opener.open(request)
-#		response_object = response.getcode(), response
-#
-#	except urllib2.HTTPError, e:
-#		if e.code == 307:
-#			for line in str(e.headers).splitlines():
-#				if "Location" in line:
-#					new_target = line.split(": ", 1)[1]
-#					response_object = send_request( new_target, data )
-#		else:
-#			response_object = e.code, e.read()
-#
-#	except urllib2.URLError, e:
-#		f = open( join( LOG_PATH, "/queue_%s.log" % sysdic['time'] ),'w')
-#		f.write(json.dumps(sysdic))
-#		f.close()
-#		response_object = 0, 'Connection Refused'
-#
-#	return response_object
+def send_request( target, data):
+	try:
+		request = urllib2.Request(target, urllib.urlencode(data) )
+		opener = urllib2.build_opener()
+		response = opener.open(request)
+		response_object = response.getcode(), response
+
+	except urllib2.HTTPError, e:
+		if e.code == 307:
+			for line in str(e.headers).splitlines():
+				if "Location" in line:
+					new_target = line.split(": ", 1)[1]
+					response_object = send_request( new_target, data )
+		else:
+			response_object = e.code, e.read()
+
+	except urllib2.URLError, e:
+		f = open( join( LOG_PATH, "/queue_%s.log" % sysdic['time'] ),'w')
+		f.write(json.dumps(sysdic))
+		f.close()
+		response_object = 0, 'Connection Refused'
+
+	return response_object
 
 
 # Check if internet is available
 while True:
 	try:
 		is_connected = urllib2.urlopen( REPORTING_TARGET )
+
 	except urllib2.URLError:
 		logging.info("Titan Watcher did not detect a connection, retrying in 3 seconds")
 		sleep(float(Config.get('watcher', 'timeout')))
+
 	else:
 		logging.info("Titan Watcher detected a connection")
 		
