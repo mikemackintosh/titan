@@ -8,12 +8,15 @@ import urllib2, urllib, httplib, json
 import logging
 import hashlib
 from os import path,walk,remove,environ
+import sys
+sys.path.append("../lib")
+from ti_orm import TiORM
 from os.path import dirname, realpath, isfile, join, splitext, basename
 from binascii import b2a_hex,hexlify
-from titantools.orm import TiORM
+#from titantools.orm import TiORM
 from titantools.system import shell_out
 from zlib import compress
-from time import sleep
+from time import sleep,strftime,gmtime,mktime
 from sys import exit
 import ConfigParser
 
@@ -23,6 +26,13 @@ TITAN_CONFIG = join(TITAN_PATH, 'titan.conf')
 
 # Set datastore
 DATASTORE = join(TITAN_PATH, "db", "titan.sqlite")
+
+# Load ORM 
+ORM = TiORM(DATASTORE)
+# Load default schema
+ORM.initialize_table('watcher', {u'date': {u'nullable': False, u'type': u'text'}, 
+								u'utime': {u'type': u'integer'}, 
+								u'status': {u'type': u'integer'}})
 
 # Device Serial
 DEVICEID = shell_out("ioreg -c IOPlatformExpertDevice |head -30 |grep IOPlatformSerialNumber | awk '{print $4}'")[1:-2]
@@ -51,26 +61,47 @@ logging.basicConfig(format='%(message)s', level=logging.INFO)
 
 def generate_reports():
 
-	# Init post object
-	#post_object = []
+	# Report Timestamp
+	unix_time = int(mktime(gmtime()))
+	exec_time = strftime("%a, %d %b %Y %H:%M:%S", gmtime())
 
-	# Load ORM 
-	ORM = TiORM(DATASTORE)
-	
+	print unix_time
+
 	# Query all tables
-	all_tables = ORM.select('sqlite_master', 'name',  "type = 'table'")
+	all_tables = ORM.select('sqlite_master', 'name',  "type = 'table' and name != 'watcher'")
+
+	# Last success
+	last_success = ORM.raw_sql('SELECT * FROM watcher WHERE status=1 ORDER BY date DESC LIMIT 1')
+	if len(last_success) > 0:
+		last_success = last_success[0]
 
 	# How many wins do we need
 	passes_needed = len(all_tables)
 	passes_had = 0
 
 	# Loop through tables
-	for table in [table for table in all_tables if table not in ['watcher']]:
-		# Logging is cool
-		logging.info("Collecting data for [%s]" % table['name'])
+	for table in [table for table in all_tables]:
+			
+		# Get table data
+		if len(last_success) is 0:
+			# Logging is cool
+			logging.info("Collecting data for [%s] since ever" % (table['name']))
+			results = ORM.select(table['name'], '*')
+		else:
+			# Logging is cool
+			print last_success
+			logging.info("Collecting data for [%s] since %s" % (table['name'],last_success[1]))
+			results = ORM.select(table['name'], '*', 'unixtime > %s' % last_success[3])
+
+		print results
 		
+		if results is None or len(results) == 0:
+			continue
+
 		# Dump table to json
-		table_json = json.dumps(ORM.select(table['name']))
+		table_json = json.dumps(results)
+
+		# Compress the data
 		compressed = compress(table_json)
 
 		# Digest
@@ -80,13 +111,23 @@ def generate_reports():
 		target = "%s%s" % (REPORTING_TARGET, DEVICEID)
 		logging.info("\tSending request to '%s'" % target)
 		code, response = send_request(target, {'serial': DEVICEID, 'digest': content_digest, 'stream': compressed})
-		logging.info("\tResponse: [%d] %s" % (code, response))
-		passes_had += 1
+		logging.info("\tResponse: [%d]" % (code))
 
+		if code == 200:
+			passes_had += 1
+
+	# If all data has been uploaded
+	# update watcher table
 	if passes_had == passes_needed:
-		print "Winning!"
-		
+		response = {'utime': str(unix_time), 'date': exec_time, 'status': str(1)};
+		ORM.insert('watcher', response)
+	else:
+		response = {'utime': str(unix_time), 'date': exec_time, 'status': str(0)};
+		ORM.insert('watcher', response)
+
+	print ORM.select('watcher')
 	exit()
+
 
 # Send the request
 def send_request( target, data):
