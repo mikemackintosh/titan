@@ -60,6 +60,10 @@ def generate_reports():
 	# Query all tables
 	all_tables = ORM.select('sqlite_master', 'name',  "type = 'table'")
 
+	# How many wins do we need
+	passes_needed = len(all_tables)
+	passes_had = 0
+
 	# Loop through tables
 	for table in [table for table in all_tables if table not in ['watcher']]:
 		# Logging is cool
@@ -77,7 +81,11 @@ def generate_reports():
 		logging.info("\tSending request to '%s'" % target)
 		code, response = send_request(target, {'serial': DEVICEID, 'digest': content_digest, 'stream': compressed})
 		logging.info("\tResponse: [%d] %s" % (code, response))
+		passes_had += 1
 
+	if passes_had == passes_needed:
+		print "Winning!"
+		
 	exit()
 
 # Send the request
