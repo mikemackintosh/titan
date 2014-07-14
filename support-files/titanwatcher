@@ -31,8 +31,8 @@ DATASTORE = join(TITAN_PATH, "db", "titan.sqlite")
 ORM = TiORM(DATASTORE)
 # Load default schema
 ORM.initialize_table('watcher', {u'date': {u'nullable': False, u'type': u'text'}, 
-								u'utime': {u'type': u'integer'}, 
-								u'status': {u'type': u'integer'}})
+                u'utime': {u'type': u'integer'}, 
+                u'status': {u'type': u'integer'}})
 
 # Device Serial
 DEVICEID = shell_out("ioreg -c IOPlatformExpertDevice |head -30 |grep IOPlatformSerialNumber | awk '{print $4}'")[1:-2]
@@ -40,12 +40,12 @@ DEVICEID = shell_out("ioreg -c IOPlatformExpertDevice |head -30 |grep IOPlatform
 # Load Configuration
 Config = ConfigParser.SafeConfigParser()
 if path.isfile( TITAN_CONFIG ):
- 	
- 	# Read the config file
- 	Config.read( TITAN_CONFIG )
 
- 	# Set Log Path
- 	REPORTING_TARGET = Config.get('reporting', 'target')
+   # Read the config file
+   Config.read( TITAN_CONFIG )
+
+   # Set Log Path
+   REPORTING_TARGET = Config.get('reporting', 'target')
 
 else:
   print "[!] Please create titan.conf"
@@ -53,117 +53,122 @@ else:
 
 # Check if Watcher is enabled
 if Config.get('watcher', 'enabled') is "false":
-	print "[!] Watcher is disabled"
-	exit()
+  print "[!] Watcher is disabled"
+  exit()
 
 # Configure Logging
 logging.basicConfig(format='%(message)s', level=logging.INFO)
 
 def generate_reports():
 
-	# Report Timestamp
-	unix_time = int(mktime(gmtime()))
-	exec_time = strftime("%a, %d %b %Y %H:%M:%S-%Z", gmtime())
+  # Report Timestamp
+  unix_time = int(mktime(gmtime()))
+  exec_time = strftime("%a, %d %b %Y %H:%M:%S-%Z", gmtime())
 
-	# Query all tables
-	all_tables = ORM.select('sqlite_master', 'name',  "type = 'table' and name != 'watcher'")
+  # Query all tables
+  all_tables = ORM.select('sqlite_master', 'name',  "type = 'table' and name != 'watcher'")
 
-	# Last success
-	last_success = ORM.raw_sql('SELECT * FROM watcher WHERE status=1 ORDER BY date DESC LIMIT 1')
-	if len(last_success) > 0:
-		last_success = last_success[0]
+  # Last success
+  last_success = ORM.raw_sql('SELECT * FROM watcher WHERE status=1 ORDER BY date DESC LIMIT 1')
+  if len(last_success) > 0:
+    last_success = last_success[0]
 
-	# How many wins do we need
-	passes_needed = len(all_tables)
-	passes_had = 0
+  # How many wins do we need
+  passes_needed = len(all_tables)
+  passes_had = 0
 
-	# Loop through tables
-	for table in [table for table in all_tables]:
-			
-		# Get table data
-		if len(last_success) is 0:
-			# Logging is cool
-			logging.info("Collecting data for [%s] since ever" % (table['name']))
-			results = ORM.select(table['name'], '*')
-		else:
-			# Logging is cool
-			print last_success
-			logging.info("Collecting data for [%s] since %s" % (table['name'],last_success[1]))
-			results = ORM.select(table['name'], '*', 'unixtime > %d' % int(last_success[3]))
-		
-		if results is None or len(results) == 0:
-			passes_needed -= 1
-			continue
+  # Loop through tables
+  for table in [table for table in all_tables]:
 
-		# Dump table to json
-		table_json = json.dumps(results)
+    # Get table data
+    if len(last_success) is 0:
+      # Logging is cool
+      logging.info("Collecting data for [%s] since ever" % (table['name']))
+      results = ORM.select(table['name'], '*')
+    else:
+      # Logging is cool
+      print last_success
+      logging.info("Collecting data for [%s] since %s" % (table['name'],last_success[1]))
+      results = ORM.select(table['name'], '*', 'unixtime > %d' % int(last_success[3]))
 
-		# Compress the data
-		compressed = compress(table_json)
+    if results is None or len(results) == 0:
+      passes_needed -= 1
+      continue
 
-		# Digest
-		content_digest = hashlib.sha256(compressed).hexdigest()
+    # Dump table to json
+    table_json = json.dumps(results)
 
-		# Send the table data upstream
-		target = "%s%s" % (REPORTING_TARGET, DEVICEID)
-		logging.info("\tSending request to '%s'" % target)
-		code, response = send_request(target, {'serial': DEVICEID, 'digest': content_digest, 'stream': compressed})
-		logging.info("\tResponse: [%d]" % (code))
+    # Compress the data
+    compressed = compress(table_json)
 
-		if code == 200:
-			passes_had += 1
+    # Digest
+    content_digest = hashlib.sha256(compressed).hexdigest()
 
-	# If all data has been uploaded
-	# update watcher table
-	if passes_had == passes_needed:
-		response = {'utime': str(unix_time), 'date': exec_time, 'status': str(1)}
-		ORM.insert('watcher', response)
-	else:
-		response = {'utime': str(unix_time), 'date': exec_time, 'status': str(0)}
-		ORM.insert('watcher', response)
+    # Send the table data upstream
+    target = "%s%s" % (REPORTING_TARGET, DEVICEID)
+    logging.info("\tSending request to '%s'" % target)
+    code, response = send_request(target, {'serial': DEVICEID, 'digest': content_digest, 'stream': compressed})
+    logging.info("\tResponse: [%d]" % (code))
 
-	print ORM.select('watcher')
-	exit()
+    if code == 200:
+      passes_had += 1
+
+  # If all data has been uploaded
+  # update watcher table
+  if passes_had == passes_needed:
+    response = {'utime': str(unix_time), 'date': exec_time, 'status': str(1)}
+    ORM.insert('watcher', response)
+  else:
+    response = {'utime': str(unix_time), 'date': exec_time, 'status': str(0)}
+    ORM.insert('watcher', response)
+
+  print ORM.select('watcher')
+  exit()
 
 
 # Send the request
 def send_request( target, data):
-	try:
-		request = urllib2.Request(target, urllib.urlencode(data) )
-		opener = urllib2.build_opener()
-		response = opener.open(request)
-		response_object = response.getcode(), response
 
-	except urllib2.HTTPError, e:
-		if e.code == 307:
-			for line in str(e.headers).splitlines():
-				if "Location" in line:
-					new_target = line.split(": ", 1)[1]
-					response_object = send_request( new_target, data )
-		else:
-			response_object = e.code, e.read()
+  try:
+    request = urllib2.Request(target, urllib.urlencode(data) )
+    opener = urllib2.build_opener()
+    response = opener.open(request)
+    response_object = response.getcode(), response
 
-	except urllib2.URLError, e:
-		f = open( join( LOG_PATH, "/queue_%s.log" % sysdic['time'] ),'w')
-		f.write(json.dumps(sysdic))
-		f.close()
-		response_object = 0, 'Connection Refused'
+  except urllib2.HTTPError, e:
+    if e.code == 307:
+      for line in str(e.headers).splitlines():
+        if "Location" in line:
+          new_target = line.split(": ", 1)[1]
+          response_object = send_request( new_target, data )
+    else:
+      response_object = e.code, e.read()
 
-	return response_object
+  except urllib2.URLError, e:
+    #f = open( join( LOG_PATH, "/queue_%s.log" % sysdic['time'] ),'w')
+    #f.write(json.dumps(sysdic))
+    #f.close()
+    response_object = 0, 'Connection Refused'
+
+  return response_object
 
 
 # Check if internet is available
+try_count = 1
 while True:
-	try:
-		is_connected = urllib2.urlopen( REPORTING_TARGET )
 
-	except urllib2.URLError:
-		logging.info("Titan Watcher did not detect a connection, retrying in 3 seconds")
-		sleep(float(Config.get('watcher', 'timeout')))
+  try:
+    is_connected = urllib2.urlopen( REPORTING_TARGET )
 
-	else:
-		logging.info("Titan Watcher detected a connection")
-		
-		generate_reports()
+  except urllib2.URLError:
+    seconds = 3**try_count
+    try_count += 1
+    logging.info("Titan Watcher did not detect a connection, retrying in %d seconds" % seconds)
+    sleep(seconds)
 
- 		sleep(float(Config.get('watcher', 'send_every')))
+  else:
+    logging.info("Titan Watcher detected a connection")
+
+    generate_reports()
+
+    sleep(float(Config.get('watcher', 'send_every')))
