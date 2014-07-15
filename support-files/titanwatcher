@@ -9,11 +9,11 @@ import logging
 import hashlib
 from os import path,walk,remove,environ
 import sys
-sys.path.append("../lib")
-from ti_orm import TiORM
+#sys.path.append("../lib")
+#from ti_orm import TiORM
 from os.path import dirname, realpath, isfile, join, splitext, basename
 from binascii import b2a_hex,hexlify
-#from titantools.orm import TiORM
+from titantools.orm import TiORM
 from titantools.system import shell_out
 from zlib import compress
 from time import sleep,strftime,strptime,gmtime,mktime
